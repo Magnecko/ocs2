@@ -6,7 +6,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(ament_cmake REQUIRED)
 find_package(ocs2_thirdparty REQUIRED)
-find_package(ament_cmake_gtest REQUIRED REQUIRED)
 
 find_package(Boost REQUIRED COMPONENTS
   system
@@ -193,7 +192,6 @@ install(DIRECTORY test/include/${PROJECT_NAME}/
 
 ament_export_include_directories(
   include
-  # test/include 
   ${EIGEN3_INCLUDE_DIRS}
 )
 ament_export_libraries(${PROJECT_NAME})
@@ -206,213 +204,210 @@ ament_export_targets(
 #############
 ## Testing ##
 #############
-## Info ==============================
-## to run tests, cd package folder and run
-## $ catkin build -DCMAKE_BUILD_TYPE=RelWithDebInfo --this
-## $ catkin run_tests --no-deps --this
-## to see the summary of unit test results run
-## $ catkin_test_results ../../../build/ocs2_core
+if(BUILD_TESTING)
 
-# ament_add_gtest(test_control
-#   test/control/testLinearController.cpp
-#   test/control/testFeedforwardController.cpp
-# )
-# target_link_libraries(test_control
-#   ${PROJECT_NAME}
-#   ${ocs2_thirdparty_LIBRARIES}
-#   gtest_main
-# )
+# Include linting tests
+find_package(ament_lint_auto REQUIRED)
+find_package(ament_cmake_gtest REQUIRED)
+ament_lint_auto_find_test_dependencies()
 
-# ament_add_gtest(initialization_unittest
-#   test/initialization/InitializationTest.cpp
-# )
-# target_link_libraries(initialization_unittest
-#   ${PROJECT_NAME}
-#   ${Boost_LIBRARIES}
-#   ${ocs2_thirdparty_LIBRARIES}
-#   gtest_main
-# )
+# test_control
+ament_add_gtest(test_control
+  test/control/testLinearController.cpp
+  test/control/testFeedforwardController.cpp
+)
+target_link_libraries(test_control
+  ${PROJECT_NAME}
+  gtest_main
+)
 
-# ament_add_gtest(test_integration
-#   test/integration/testSensitivityIntegrator.cpp
-#   test/integration/IntegrationTest.cpp
-#   test/integration/testRungeKuttaDormandPrince5.cpp
-#   test/integration/TrapezoidalIntegrationTest.cpp
-# )
-# target_link_libraries(test_integration
-#   ${PROJECT_NAME}
-#   ${Boost_LIBRARIES}
-#   ${ocs2_thirdparty_LIBRARIES}
-#   gtest_main
-# )
+# initialization_unittest
+ament_add_gtest(initialization_unittest
+  test/initialization/InitializationTest.cpp
+)
+target_link_libraries(initialization_unittest
+  ${PROJECT_NAME}
+  ${Boost_LIBRARIES}
+  gtest_main
+)
 
-# ament_add_gtest(interpolation_unittest
-#   test/misc/testInterpolation.cpp
-# )
-# target_link_libraries(interpolation_unittest
-#   ${PROJECT_NAME}
-#   ${ocs2_thirdparty_LIBRARIES}
-#   gtest_main
-# )
+# test_integration
+ament_add_gtest(test_integration
+  test/integration/testSensitivityIntegrator.cpp
+  test/integration/IntegrationTest.cpp
+  test/integration/testRungeKuttaDormandPrince5.cpp
+  test/integration/TrapezoidalIntegrationTest.cpp
+)
+target_link_libraries(test_integration
+  ${PROJECT_NAME}
+  ${Boost_LIBRARIES}
+  gtest_main
+)
 
-# ament_add_gtest(${PROJECT_NAME}_cppadcg
-#   test/cppad_cg/testCppADCG_dynamics.cpp
-#   test/cppad_cg/testSparsityHelpers.cpp
-#   test/cppad_cg/testCppAdInterface.cpp
-# )
-# target_link_libraries(${PROJECT_NAME}_cppadcg
-#   ${PROJECT_NAME}
-#   ${Boost_LIBRARIES}
-#   ${ocs2_thirdparty_LIBRARIES}
-#   -lm -ldl
-#   gtest_main
-# )
+# interpolation_unittest
+ament_add_gtest(interpolation_unittest
+  test/misc/testInterpolation.cpp
+)
+target_link_libraries(interpolation_unittest
+  ${PROJECT_NAME}
+  gtest_main
+)
 
-# ament_add_gtest(test_transferfunctionbase
-#   test/dynamics/testTransferfunctionBase.cpp
-# )
-# target_link_libraries(test_transferfunctionbase
-#   ${PROJECT_NAME}
-#   ${ocs2_thirdparty_LIBRARIES}
-#   gtest_main
-# )
+# ocs2_core_cppadcg
+ament_add_gtest(${PROJECT_NAME}_cppadcg
+  test/cppad_cg/testCppADCG_dynamics.cpp
+  test/cppad_cg/testSparsityHelpers.cpp
+  test/cppad_cg/testCppAdInterface.cpp
+)
 
-# ament_add_gtest(${PROJECT_NAME}_loopshaping
-#   test/loopshaping/testLoopshapingConfiguration.cpp
-#   test/loopshaping/testLoopshapingAugmentedLagrangian.cpp
-#   test/loopshaping/testLoopshapingConstraint.cpp
-#   test/loopshaping/testLoopshapingCost.cpp
-#   test/loopshaping/testLoopshapingSoftConstraint.cpp
-#   test/loopshaping/testLoopshapingDefinition.cpp
-#   test/loopshaping/testLoopshapingDynamics.cpp
-#   test/loopshaping/testLoopshapingFilterDynamics.cpp
-#   test/loopshaping/testLoopshapingPreComputation.cpp
-# )
-# target_link_libraries(${PROJECT_NAME}_loopshaping
-#   ${PROJECT_NAME}
-#   ${Boost_LIBRARIES}
-#   ${ocs2_thirdparty_LIBRARIES}
-#   -lstdc++fs
-#   gtest_main
-# )
+target_include_directories(${PROJECT_NAME}_cppadcg PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/test/include>
+  $<INSTALL_INTERFACE:include>
+)
 
-# ament_add_gtest(${PROJECT_NAME}_test_misc
-#   test/misc/testInterpolation.cpp
-#   test/misc/testLinearAlgebra.cpp
-#   test/misc/testLogging.cpp
-#   test/misc/testLoadData.cpp
-#   test/misc/testLookup.cpp
-# )
-# target_link_libraries(${PROJECT_NAME}_test_misc
-#   ${PROJECT_NAME}
-#   ${Boost_LIBRARIES}
-#   ${ocs2_thirdparty_LIBRARIES}
-#   gtest_main
-# )
+target_link_libraries(${PROJECT_NAME}_cppadcg
+  ${PROJECT_NAME}
+  ${Boost_LIBRARIES}
+  -lm -ldl
+  gtest_main
+)
 
-# ament_add_gtest(test_dynamics
-#   test/dynamics/testSystemDynamicsLinearizer.cpp
-#   test/dynamics/testSystemDynamicsPreComputation.cpp
-# )
-# target_link_libraries(test_dynamics
-#   ${PROJECT_NAME}
-#   ${ocs2_thirdparty_LIBRARIES}
-#   gtest_main
-# )
+# test_transferfunctionbase
+ament_add_gtest(test_transferfunctionbase
+  test/dynamics/testTransferfunctionBase.cpp
+)
+target_link_libraries(test_transferfunctionbase
+  ${PROJECT_NAME}
+  gtest_main
+)
 
-# ament_add_gtest(test_cost
-#   test/cost/testCostCollection.cpp
-#   test/cost/testCostCppAd.cpp
-#   test/cost/testQuadraticCostFunction.cpp
-# )
-# target_link_libraries(test_cost
-#   ${PROJECT_NAME}
-#   ${Boost_LIBRARIES}
-#   ${ocs2_thirdparty_LIBRARIES}
-#   gtest_main
-# )
+ament_add_gtest(${PROJECT_NAME}_loopshaping
+  test/loopshaping/testLoopshapingConfiguration.cpp
+  test/loopshaping/testLoopshapingConstraint.cpp
+  test/loopshaping/testLoopshapingCost.cpp
+  test/loopshaping/testLoopshapingSoftConstraint.cpp
+  test/loopshaping/testLoopshapingDefinition.cpp
+  test/loopshaping/testLoopshapingDynamics.cpp
+  test/loopshaping/testLoopshapingFilterDynamics.cpp
+  test/loopshaping/testLoopshapingPreComputation.cpp
+)
 
-# ament_add_gtest(test_constraint
-#   test/constraint/testConstraintCollection.cpp
-#   test/constraint/testConstraintCppAd.cpp
-#   test/constraint/testLinearConstraint.cpp
-# )
-# target_link_libraries(test_constraint
-#   ${PROJECT_NAME}
-#   ${Boost_LIBRARIES}
-#   ${ocs2_thirdparty_LIBRARIES}
-#   gtest_main
-# )
+target_include_directories(${PROJECT_NAME}_loopshaping PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/test/include>
+  $<INSTALL_INTERFACE:include>
+)
 
-# ament_add_gtest(test_metrics
-#   test/model_data/testMetrics.cpp
-# )
-# target_link_libraries(test_metrics
-#   ${PROJECT_NAME}
-#   ${ocs2_thirdparty_LIBRARIES}
-#   gtest_main
-# )
+target_link_libraries(${PROJECT_NAME}_loopshaping
+  ${PROJECT_NAME}
+  ${Boost_LIBRARIES}
+  -lstdc++fs
+  gtest_main
+)
 
-# ament_add_gtest(test_multiplier
-#   test/model_data/testMultiplier.cpp
-# )
-# target_link_libraries(test_multiplier
-#   ${PROJECT_NAME}
-#   ${ocs2_thirdparty_LIBRARIES}
-#   gtest_main
-# )
+# ocs2_core_test_misc
+ament_add_gtest(${PROJECT_NAME}_test_misc
+  test/misc/testInterpolation.cpp
+  test/misc/testLinearAlgebra.cpp
+  test/misc/testLogging.cpp
+  test/misc/testLoadData.cpp
+  test/misc/testLookup.cpp
+)
+target_link_libraries(${PROJECT_NAME}_test_misc
+  ${PROJECT_NAME}
+  ${Boost_LIBRARIES}
+  gtest_main
+)
 
-# ament_add_gtest(test_ModelData
-#   test/model_data/testModelData.cpp
-# )
-# target_link_libraries(test_ModelData
-#   ${PROJECT_NAME}
-#   ${ocs2_thirdparty_LIBRARIES}
-#   gtest_main
-# )
+# test_dynamics
+ament_add_gtest(test_dynamics
+  test/dynamics/testSystemDynamicsLinearizer.cpp
+  test/dynamics/testSystemDynamicsPreComputation.cpp
+)
+target_link_libraries(test_dynamics
+  ${PROJECT_NAME}
+  gtest_main
+)
 
-# ament_add_gtest(test_ModeSchedule
-#   test/reference/testModeSchedule.cpp
-# )
-# target_link_libraries(test_ModeSchedule
-#   ${PROJECT_NAME}
-#   ${ocs2_thirdparty_LIBRARIES}
-#   gtest_main
-# )
+# test_cost
+ament_add_gtest(test_cost
+  test/cost/testCostCollection.cpp
+  test/cost/testCostCppAd.cpp
+  test/cost/testQuadraticCostFunction.cpp
+)
+target_link_libraries(test_cost
+  ${PROJECT_NAME}
+  ${Boost_LIBRARIES}
+  gtest_main
+  -ldl
+)
 
-# ament_add_gtest(test_softConstraint
-#   test/soft_constraint/testSoftConstraint.cpp
-#   test/soft_constraint/testDoubleSidedPenalty.cpp
-# )
-# target_link_libraries(test_softConstraint
-#   ${PROJECT_NAME}
-#   ${Boost_LIBRARIES}
-#   ${ocs2_thirdparty_LIBRARIES}
-#   gtest_main
-# )
+# test_constraint
+ament_add_gtest(test_constraint
+  test/constraint/testConstraintCollection.cpp
+  test/constraint/testConstraintCppAd.cpp
+  test/constraint/testLinearConstraint.cpp
+)
+target_link_libraries(test_constraint
+  ${PROJECT_NAME}
+  ${Boost_LIBRARIES}
+  gtest_main
+  -ldl
+)
 
-# ament_add_gtest(${PROJECT_NAME}_test_thread_support
-#   test/thread_support/testBufferedValue.cpp
-#   test/thread_support/testSynchronized.cpp
-#   test/thread_support/testThreadPool.cpp
-# )
-# target_link_libraries(${PROJECT_NAME}_test_thread_support
-#   ${PROJECT_NAME}
-#   ${Boost_LIBRARIES}
-#   ${ocs2_thirdparty_LIBRARIES}
-#   gtest_main
-# )
+# test_ModelData
+ament_add_gtest(test_ModelData
+  test/model_data/testModelData.cpp
+)
+target_link_libraries(test_ModelData
+  ${PROJECT_NAME}
+  gtest_main
+)
 
-# ament_add_gtest(${PROJECT_NAME}_test_core
-#   test/testPrecomputation.cpp
-#   test/testTypes.cpp
-#   )
-# target_link_libraries(${PROJECT_NAME}_test_core
-#   ${PROJECT_NAME}
-#   ${Boost_LIBRARIES}
-#   ${ocs2_thirdparty_LIBRARIES}
-#   gtest_main
-# )
+# test_Logging
+ament_add_gtest(test_Logging
+  test/misc/testLogging.cpp
+)
+target_link_libraries(test_Logging
+  ${PROJECT_NAME}
+  ${Boost_LIBRARIES}
+  gtest_main
+)
+
+# test_softConstraint
+ament_add_gtest(test_softConstraint
+  test/soft_constraint/testSoftConstraint.cpp
+  test/soft_constraint/testDoubleSidedPenalty.cpp
+)
+target_link_libraries(test_softConstraint
+  ${PROJECT_NAME}
+  ${Boost_LIBRARIES}
+  gtest_main
+)
+
+# ocs2_core_test_thread_support
+ament_add_gtest(${PROJECT_NAME}_test_thread_support
+  test/thread_support/testBufferedValue.cpp
+  test/thread_support/testSynchronized.cpp
+  test/thread_support/testThreadPool.cpp
+)
+target_link_libraries(${PROJECT_NAME}_test_thread_support
+  ${PROJECT_NAME}
+  ${Boost_LIBRARIES}
+  gtest_main
+)
+
+# ocs2_core_test_precomputation
+ament_add_gtest(${PROJECT_NAME}_test_precomputation
+  test/testPrecomputation.cpp
+)
+target_link_libraries(${PROJECT_NAME}_test_precomputation
+  ${PROJECT_NAME}
+  ${Boost_LIBRARIES}
+  gtest_main
+)
+
+endif(BUILD_TESTING)
+
 
 ament_package(
   CONFIG_EXTRAS "cmake/ocs2_cxx_flags.cmake"
