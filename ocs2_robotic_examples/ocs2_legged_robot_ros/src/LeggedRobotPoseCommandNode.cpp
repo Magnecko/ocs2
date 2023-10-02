@@ -29,8 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <string>
 
-#include <ros/init.h>
-#include <ros/package.h>
+#include <rclcpp/rclcpp.hpp>
 
 #include <ocs2_core/Types.h>
 #include <ocs2_core/misc/LoadData.h>
@@ -44,6 +43,17 @@ scalar_t targetRotationVelocity;
 scalar_t comHeight;
 vector_t defaultJointState(12);
 }  // namespace
+
+static auto LOGGER = rclcpp::get_logger("LeggedRobotPoseCommandNode");
+
+auto declareAndGetStringParam = [] (rclcpp::Node::SharedPtr &node, const std::string &param_name, std::string &param_value) {
+  if (!node->has_parameter(param_name)) node->declare_parameter(param_name, std::string(""));
+
+  rclcpp::Parameter parameter;
+  node->get_parameter(param_name, parameter);
+  param_value = parameter.as_string();
+};
+
 
 scalar_t estimateTimeToTarget(const vector_t& desiredBaseDisplacement) {
   const scalar_t& dx = desiredBaseDisplacement(0);
@@ -98,11 +108,11 @@ int main(int argc, char* argv[]) {
   const std::string robotName = "legged_robot";
 
   // Initialize ros node
-  ::ros::init(argc, argv, robotName + "_target");
-  ::ros::NodeHandle nodeHandle;
+  rclcpp::init(argc, argv);
+  rclcpp::Node::SharedPtr nodeHandle = rclcpp::Node::make_shared(robotName + "_target");
   // Get node parameters
   std::string referenceFile;
-  nodeHandle.getParam("/referenceFile", referenceFile);
+  declareAndGetStringParam(nodeHandle, "reference_file", referenceFile);
 
   loadData::loadCppDataType(referenceFile, "comHeight", comHeight);
   loadData::loadEigenMatrix(referenceFile, "defaultJointState", defaultJointState);
@@ -115,6 +125,8 @@ int main(int argc, char* argv[]) {
 
   const std::string commandMsg = "Enter XYZ and Yaw (deg) displacements for the TORSO, separated by spaces";
   targetPoseCommand.publishKeyboardCommand(commandMsg);
+
+  // TODO Joystick publisher
 
   // Successful exit
   return 0;

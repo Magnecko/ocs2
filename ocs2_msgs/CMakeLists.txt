@@ -1,39 +1,27 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.5)
 project(ocs2_msgs)
 
-find_package(catkin REQUIRED
-  COMPONENTS
-    std_msgs
-    message_generation
+find_package(rosidl_default_generators REQUIRED)
+find_package(ament_cmake REQUIRED)
+find_package(std_msgs REQUIRED)
+set(CMAKE_CXX_STANDARD 1 4)
+
+rosidl_generate_interfaces(
+    ${PROJECT_NAME}
+        msg/MpcPerformanceIndices.msg
+        msg/MpcObservation.msg
+        msg/LagrangianMetrics.msg
+        msg/Multiplier.msg
+        msg/ModeSchedule.msg
+        msg/MpcInput.msg
+        msg/MpcState.msg
+        msg/MpcTargetTrajectories.msg
+        msg/Constraint.msg
+        msg/MpcFlattenedController.msg
+        msg/ControllerData.msg
+        srv/Reset.srv
+    DEPENDENCIES
+        
 )
 
-add_message_files(
-  FILES
-    mpc_state.msg
-    mpc_input.msg
-    mode_schedule.msg
-    mpc_observation.msg
-    mpc_performance_indices.msg
-    mpc_target_trajectories.msg
-    controller_data.msg
-    mpc_flattened_controller.msg
-    lagrangian_metrics.msg
-    multiplier.msg
-    constraint.msg
-)
-
-add_service_files(
-  FILES
-    reset.srv
-)
-
-generate_messages(
-  DEPENDENCIES
-    std_msgs
-)
-
-catkin_package(
-  CATKIN_DEPENDS
-    std_msgs
-    message_runtime
-)
+ament_package()

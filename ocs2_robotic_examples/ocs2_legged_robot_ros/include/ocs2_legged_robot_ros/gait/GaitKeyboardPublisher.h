@@ -32,10 +32,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <vector>
 
-#include <ros/ros.h>
-#include <std_msgs/Bool.h>
+#include "rclcpp/rclcpp.hpp"
+#include <std_msgs/msg/bool.hpp>
 
 #include <ocs2_legged_robot/gait/ModeSequenceTemplate.h>
+
+#include <ocs2_msgs/msg/mode_schedule.hpp>
 
 namespace ocs2 {
 namespace legged_robot {
@@ -43,7 +45,7 @@ namespace legged_robot {
 /** This class implements ModeSequence communication using ROS. */
 class GaitKeyboardPublisher {
  public:
-  GaitKeyboardPublisher(ros::NodeHandle nodeHandle, const std::string& gaitFile, const std::string& robotName, bool verbose = false);
+  GaitKeyboardPublisher(rclcpp::Node::SharedPtr nodeHandle, const std::string& gaitFile, const std::string& robotName, bool verbose = false);
 
   /** Prints the command line interface and responds to user input. Function returns after one user input. */
   void getKeyboardCommand();
@@ -55,7 +57,7 @@ class GaitKeyboardPublisher {
   std::vector<std::string> gaitList_;
   std::map<std::string, ModeSequenceTemplate> gaitMap_;
 
-  ros::Publisher modeSequenceTemplatePublisher_;
+  rclcpp::Publisher<ocs2_msgs::msg::ModeSchedule>::SharedPtr modeSequenceTemplatePublisher_;
 };
 
 }  // namespace legged_robot

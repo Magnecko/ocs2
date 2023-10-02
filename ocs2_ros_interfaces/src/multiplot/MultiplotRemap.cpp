@@ -29,36 +29,38 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <string>
 
-#include <ros/init.h>
-#include <ros/ros.h>
+// #include <ros/init.h>
+#include "rclcpp/rclcpp.hpp"
 
 #include <ocs2_core/Types.h>
 
-#include <ocs2_msgs/mpc_flattened_controller.h>
-#include <ocs2_msgs/mpc_performance_indices.h>
+#include <ocs2_msgs/msg/mpc_flattened_controller.hpp>
+#include <ocs2_msgs/msg/mpc_performance_indices.hpp>
 
 namespace {
 
 class MultiplotRemap {
  public:
   /** Constructor */
-  explicit MultiplotRemap(const std::string& mpcPolicyTopicName, ::ros::NodeHandle& nodeHandle) {
+  explicit MultiplotRemap(const std::string& mpcPolicyTopicName, ::rclcpp::Node::SharedPtr& nodeHandle) {
     mpcPolicySubscriber_ =
-        nodeHandle.subscribe(mpcPolicyTopicName, 1, &MultiplotRemap::mpcPoicyCallback, this, ::ros::TransportHints().tcpNoDelay());
-    mpcPerformanceIndicesPublisher_ = nodeHandle.advertise<ocs2_msgs::mpc_performance_indices>("mpc_performance_indices", 1);
+        nodeHandle->create_subscription<ocs2_msgs::msg::MpcFlattenedController>(
+          mpcPolicyTopicName, 1, std::bind(&MultiplotRemap::mpcPoicyCallback, this, std::placeholders::_1));
+    
+    mpcPerformanceIndicesPublisher_ = nodeHandle->create_publisher<ocs2_msgs::msg::MpcPerformanceIndices>("mpc_performance_indices", 1);
   }
 
   /** Default deconstructor */
   ~MultiplotRemap() = default;
 
  private:
-  void mpcPoicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& policyMsg) {
-    mpcPerformanceIndicesPublisher_.publish(policyMsg->performanceIndices);
+  void mpcPoicyCallback(const ocs2_msgs::msg::MpcFlattenedController::SharedPtr policyMsg) {
+    mpcPerformanceIndicesPublisher_->publish(policyMsg->performance_indices);
   }
 
   // publishers and subscribers
-  ::ros::Subscriber mpcPolicySubscriber_;
-  ::ros::Publisher mpcPerformanceIndicesPublisher_;
+  rclcpp::Subscription<ocs2_msgs::msg::MpcFlattenedController>::SharedPtr mpcPolicySubscriber_;
+  rclcpp::Publisher<ocs2_msgs::msg::MpcPerformanceIndices>::SharedPtr mpcPerformanceIndicesPublisher_;
 };
 
 }  // unnamed namespace
@@ -66,17 +68,17 @@ class MultiplotRemap {
 int main(int argc, char** argv) {
   // mpc policy topic name
   std::vector<std::string> programArgs{};
-  ::ros::removeROSArgs(argc, argv, programArgs);
+  programArgs = rclcpp::remove_ros_arguments(argc, argv);
   if (programArgs.size() <= 1) {
     throw std::runtime_error("MPC policy topic name is not specified!");
   }
   const std::string mpcPolicyTopicName = std::string(programArgs[1]);
 
-  ::ros::init(argc, argv, "multiplot_remap");
-  ::ros::NodeHandle nodeHandle;
-  MultiplotRemap multiplotRemap(mpcPolicyTopicName, nodeHandle);
+  ::rclcpp::init(argc, argv);
+  auto node = std::make_shared<rclcpp::Node>("multiplot_remap");
+  MultiplotRemap multiplotRemap(mpcPolicyTopicName, node);
 
-  ::ros::spin();
+  ::rclcpp::spin(node);
 
   return 0;
 }

@@ -27,28 +27,36 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
-#include <ros/init.h>
-#include <ros/package.h>
+#include <rclcpp/rclcpp.hpp>
 
 #include "ocs2_legged_robot_ros/gait/GaitKeyboardPublisher.h"
 
 using namespace ocs2;
 using namespace legged_robot;
+static auto LOGGER = rclcpp::get_logger("LeggedRobotGaitCommandNode");
+
+auto declareAndGetStringParam = [] (rclcpp::Node::SharedPtr &node, const std::string &param_name, std::string &param_value) {
+  if (!node->has_parameter(param_name)) node->declare_parameter(param_name, std::string(""));
+
+  rclcpp::Parameter parameter;
+  node->get_parameter(param_name, parameter);
+  param_value = parameter.as_string();
+};
 
 int main(int argc, char* argv[]) {
   const std::string robotName = "legged_robot";
 
   // Initialize ros node
-  ros::init(argc, argv, robotName + "_mpc_mode_schedule");
-  ros::NodeHandle nodeHandle;
+  rclcpp::init(argc, argv);
+  rclcpp::Node::SharedPtr nodeHandle = std::make_shared<rclcpp::Node>(robotName + "_mpc_mode_schedule");
   // Get node parameters
   std::string gaitCommandFile;
-  nodeHandle.getParam("/gaitCommandFile", gaitCommandFile);
+  declareAndGetStringParam(nodeHandle, "gait_command_file", gaitCommandFile);
   std::cerr << "Loading gait file: " << gaitCommandFile << std::endl;
 
   GaitKeyboardPublisher gaitCommand(nodeHandle, gaitCommandFile, robotName, true);
 
-  while (ros::ok() && ros::master::check()) {
+  while (rclcpp::ok()) {
     gaitCommand.getKeyboardCommand();
   }
 

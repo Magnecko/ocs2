@@ -27,8 +27,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#include <ros/init.h>
-#include <ros/package.h>
+#include <rclcpp/rclcpp.hpp>
 
 #include <ocs2_ipm/IpmMpc.h>
 #include <ocs2_legged_robot/LeggedRobotInterface.h>
@@ -41,19 +40,29 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using namespace ocs2;
 using namespace legged_robot;
 
+static auto LOGGER = rclcpp::get_logger("LeggedRobotIPMMpcNode");
+
+auto declareAndGetStringParam = [] (rclcpp::Node::SharedPtr &node, const std::string &param_name, std::string &param_value) {
+  if (!node->has_parameter(param_name)) node->declare_parameter(param_name, std::string(""));
+
+  rclcpp::Parameter parameter;
+  node->get_parameter(param_name, parameter);
+  param_value = parameter.as_string();
+};
+
 int main(int argc, char** argv) {
   const std::string robotName = "legged_robot";
 
   // Initialize ros node
-  ::ros::init(argc, argv, robotName + "_mpc");
-  ::ros::NodeHandle nodeHandle;
+  rclcpp::init(argc, argv);
+  rclcpp::Node::SharedPtr nodeHandle = std::make_shared<rclcpp::Node>(robotName + "_mpc");
   // Get node parameters
   bool multiplot = false;
   std::string taskFile, urdfFile, referenceFile;
-  nodeHandle.getParam("/multiplot", multiplot);
-  nodeHandle.getParam("/taskFile", taskFile);
-  nodeHandle.getParam("/urdfFile", urdfFile);
-  nodeHandle.getParam("/referenceFile", referenceFile);
+  declareAndGetStringParam(nodeHandle, "task_file", taskFile);
+  declareAndGetStringParam(nodeHandle, "urdf_file", urdfFile);
+  declareAndGetStringParam(nodeHandle, "reference_file", referenceFile);
+  //TODO get multiplot param
 
   // Robot interface
   constexpr bool useHardFrictionConeConstraint = true;
