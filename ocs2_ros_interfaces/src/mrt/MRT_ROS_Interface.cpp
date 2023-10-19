@@ -239,7 +239,10 @@ void MRT_ROS_Interface::shutdownPublisher() {
 /******************************************************************************************************/
 /******************************************************************************************************/
 void MRT_ROS_Interface::spinMRT() {
-  rclcpp::spin_some(node_);
+  // rclcpp::spin_some(node_);
+  rclcpp::executors::MultiThreadedExecutor executor;
+  executor.add_node(node_);
+  executor.spin_once();
 };
 
 /******************************************************************************************************/

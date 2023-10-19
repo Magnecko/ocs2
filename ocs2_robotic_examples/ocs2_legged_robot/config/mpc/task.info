@@ -23,7 +23,7 @@ swing_trajectory_config
   touchDownVelocity            -0.4
   swingHeight                   0.1
   touchdownAfterHorizon         0.2
-  swingTimeScale                0.15
+  swingTimeScale                0.3
 }
 
 ; Multiple_Shooting SQP settings

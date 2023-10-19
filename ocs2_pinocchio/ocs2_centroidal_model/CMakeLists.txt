@@ -10,6 +10,8 @@ set(AMENT_DEPENDENCIES
   ocs2_robotic_tools
   ocs2_robotic_assets
   ocs2_pinocchio_interface
+  pinocchio
+  Eigen3
 )
 
 # find_package(${AMENT_DEPENDENCIES})
@@ -20,13 +22,11 @@ endforeach()
 find_package(Boost REQUIRED COMPONENTS
   system
   filesystem
+  log 
+  log_setup
 )
 
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
-
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(pinocchio REQUIRED pinocchio)
-
+find_package(Threads REQUIRED)
 
 ###########
 ## Build ##
@@ -65,11 +65,9 @@ add_library(${PROJECT_NAME}
   src/FactoryFunctions.cpp
   src/ModelHelperFunctions.cpp
 )
-target_link_libraries(${PROJECT_NAME}
-  ${AMENT_DEPENDENCIES}
-  ${Boost_LIBRARIES}
-  ${pinocchio_LIBRARIES}
-)
+ament_target_dependencies(${PROJECT_NAME}
+${AMENT_DEPENDENCIES})
+
 target_compile_options(${PROJECT_NAME} PUBLIC ${FLAGS})
 
 #########################

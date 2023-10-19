@@ -124,7 +124,7 @@ void MRT_ROS_Dummy_Loop::synchronizedDummyLoop(const SystemObservation& initObse
     }
 
     ++loopCounter;
-    rclcpp::spin_some(mrt_.getNode());
+    mrt_.spinMRT();
     simRate.sleep();
   }
 }
@@ -162,7 +162,7 @@ void MRT_ROS_Dummy_Loop::realtimeDummyLoop(const SystemObservation& initObservat
       observer->update(currentObservation, mrt_.getPolicy(), mrt_.getCommand());
     }
 
-    rclcpp::spin_some(mrt_.getNode());
+    mrt_.spinMRT();
     simRate.sleep();
   }
 }
