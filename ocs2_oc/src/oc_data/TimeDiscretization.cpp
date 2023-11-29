@@ -58,7 +58,8 @@ scalar_t getIntervalDuration(const AnnotatedTime& start, const AnnotatedTime& en
 }
 
 std::vector<AnnotatedTime> timeDiscretizationWithEvents(scalar_t initTime, scalar_t finalTime, scalar_t dt,
-                                                        const scalar_array_t& eventTimes, scalar_t dt_min) {
+                                                        const scalar_array_t& eventTimes, const std::vector<size_t>& modeSequence,
+                                                        scalar_t dt_min) {
   assert(dt > 0);
   assert(finalTime > initTime);
   std::vector<AnnotatedTime> timeDiscretization;
@@ -75,9 +76,12 @@ std::vector<AnnotatedTime> timeDiscretizationWithEvents(scalar_t initTime, scala
 
     // Check if an event has passed
     if (nextEventIdx < eventTimes.size() && nextNode.time >= eventTimes[nextEventIdx]) {
-      nextNode.time = eventTimes[nextEventIdx];
-      nextNode.event = AnnotatedTime::Event::PreEvent;
-      nextEventIdx++;
+      // if modeSequence is provided, only add event if consecutive modes are different
+      if (modeSequence.empty() || modeSequence[nextEventIdx + 1] != modeSequence[nextEventIdx]) {
+        nextNode.time = eventTimes[nextEventIdx];
+        nextNode.event = AnnotatedTime::Event::PreEvent;
+        nextEventIdx++;
+      }
     }
 
     // Check if final time has passed

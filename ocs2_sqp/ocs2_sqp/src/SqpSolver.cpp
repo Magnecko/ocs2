@@ -163,7 +163,8 @@ void SqpSolver::runImpl(scalar_t initTime, const vector_t& initState, scalar_t f
 
   // Determine time discretization, taking into account event times.
   const auto& eventTimes = this->getReferenceManager().getModeSchedule().eventTimes;
-  const auto timeDiscretization = timeDiscretizationWithEvents(initTime, finalTime, settings_.dt, eventTimes);
+  const auto& modeSequence = this->getReferenceManager().getModeSchedule().modeSequence;
+  const auto timeDiscretization = timeDiscretizationWithEvents(initTime, finalTime, settings_.dt, eventTimes, modeSequence);
 
   // Initialize references
   for (auto& ocpDefinition : ocpDefinitions_) {

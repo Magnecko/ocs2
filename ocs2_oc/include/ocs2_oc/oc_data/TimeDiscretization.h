@@ -73,7 +73,7 @@ scalar_t getIntervalDuration(const AnnotatedTime& start, const AnnotatedTime& en
  * @return vector of discrete time points
  */
 std::vector<AnnotatedTime> timeDiscretizationWithEvents(scalar_t initTime, scalar_t finalTime, scalar_t dt,
-                                                        const scalar_array_t& eventTimes,
+                                                        const scalar_array_t& eventTimes, const std::vector<size_t>& modeSequence = {},
                                                         scalar_t dt_min = 10.0 * numeric_traits::limitEpsilon<scalar_t>());
 
 /**
