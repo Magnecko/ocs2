@@ -49,6 +49,7 @@ struct OptimalControlProblem {
   /* Cost */
   /** Intermediate cost */
   std::unique_ptr<StateInputCostCollection> costPtr;
+  std::unique_ptr<StateInputCostCollection> costPtrCentroidal;
   /** Intermediate state-only cost */
   std::unique_ptr<StateCostCollection> stateCostPtr;
   /** Pre-jump cost */
